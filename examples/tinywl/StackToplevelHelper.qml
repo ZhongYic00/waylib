@@ -138,10 +138,12 @@ Item {
     onMappedChanged: {
         // When Socket is enabled and mapped becomes false, set visible
         // after closeAnimation complete， Otherwise set visible directly.
+        console.log('mappedchanged',mapped,surface)
         if (mapped) {
             if (waylandSurface.isMinimized) {
                 surface.visible = false;
                 dockModel.append({ source: surface });
+                console.log('dockmodel',dockModel,dockModel.count)
             } else {
                 surface.visible = true;
 

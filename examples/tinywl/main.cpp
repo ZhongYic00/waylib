@@ -301,13 +301,18 @@ void Helper::cancelMoveResize(WSurfaceItem *shell)
     stopMoveResize();
 }
 
-bool Helper::startDemoClient(const QString &socket)
+bool Helper::startDemoClient(const QString &socket,const QString &sh)
 {
+    qWarning()<<"startDemoOn"<<socket;
 #ifdef START_DEMO
     QProcess waylandClientDemo;
-
-    waylandClientDemo.setProgram("qml");
-    waylandClientDemo.setArguments({SOURCE_DIR"/ClientWindow.qml", "-platform", "wayland"});
+    if(sh.length()){
+        waylandClientDemo.setProgram("sh");
+        waylandClientDemo.setArguments({"-c",sh});
+    } else {
+        waylandClientDemo.setProgram("qml");
+        waylandClientDemo.setArguments({SOURCE_DIR"/ClientWindow.qml", "-platform", "wayland"});
+    }
 
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
     env.insert("WAYLAND_DISPLAY", socket);

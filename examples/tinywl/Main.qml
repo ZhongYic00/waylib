@@ -37,6 +37,9 @@ Item {
             onInputRemoved: function(inputDevice) {
                 seat0.removeDevice(inputDevice)
             }
+            Component.onCompleted:{
+                console.log('server ready',backend)
+            }
         }
 
         WaylandCompositor {
@@ -152,9 +155,18 @@ Item {
 
             freezeClientWhenDisable: false
 
+            onEnabledChanged: {
+                console.warn(`waylandsock enabled=${enabled}`)
+            }
+
             Component.onCompleted: {
                 console.info("Listing on:", socketFile)
-                Helper.startDemoClient(socketFile)
+                console.log("demo start status:", Helper.startDemoClient(socketFile))
+                console.log("demo start status:", Helper.startDemoClient(socketFile))
+                console.log("demo start status:", Helper.startDemoClient(socketFile))
+                console.log("demo start status:", Helper.startDemoClient(socketFile,"weston"))
+                console.log("demo start status:", Helper.startDemoClient(socketFile,"qml /home/zyb/Coding/Qt/DDM/treeland/waylib/examples/tinywl/ClientImageWin.qml -- 'file:///home/zyc/Pictures/ScreenShots/截图录屏_dde-desktop_20200909201013.png'"))
+                console.log("demo start status:", Helper.startDemoClient(socketFile,"cd /home/zyc/Github/QtQuick-DTK-style && ./build/linux/x86_64/debug/example-cpp -platform wayland"))
             }
         }
 
@@ -273,6 +285,12 @@ Item {
                         decorationManager.mode = XdgDecorationManager.PreferServerSide
                     }
                 }
+                TabButton {
+                    text: qsTr("StageManager Layout")
+                    onClicked: {
+                        decorationManager.mode = XdgDecorationManager.PreferServerSide
+                    }
+                }
             }
 
             Item {
@@ -286,6 +304,10 @@ Item {
 
                 TiledWorkspace {
                     visible: topbar.currentIndex === 1
+                    anchors.fill: parent
+                }
+                StageManagerWorkspace {
+                    visible: topbar.currentIndex === 2
                     anchors.fill: parent
                 }
             }

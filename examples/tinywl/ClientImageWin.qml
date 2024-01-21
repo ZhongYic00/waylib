@@ -19,11 +19,6 @@ ApplicationWindow {
 
         property alias animationRunning: ani.running
 
-        gradient: Gradient {
-            GradientStop { position: 0; color: "steelblue" }
-            GradientStop { position: 1; color: "yellow" }
-        }
-
         Text {
             anchors.centerIn: parent
             text: "Qt Quick in a texture"
@@ -37,6 +32,11 @@ ApplicationWindow {
                 NumberAnimation { from: 0; to: 360; duration: 5000; easing.type: Easing.InOutCubic }
                 loops: Animation.Infinite
             }
+        }
+        Image {
+            anchors.fill: parent
+            source: Qt.application.arguments[3]
+            Component.onCompleted: console.info(Qt.application.arguments)
         }
 
         Column {
@@ -62,30 +62,5 @@ ApplicationWindow {
         anchors.horizontalCenter: parent.horizontalCenter
         text: `I am a Qt window ${Math.random().toFixed(3)}`
         font.pointSize: 20
-    }
-
-    Menu {
-        id: menu
-
-        MenuItem {
-            text: "Test 1"
-        }
-
-        Menu {
-            title: "Sub Menu"
-            MenuItem {
-                text: "Test 2"
-            }
-        }
-    }
-
-    Button {
-        id: menuButton
-        text: "Menu"
-        anchors.centerIn: parent
-        onClicked: {
-            console.log('btn clicked',titletxt.text)
-            menu.open(menuButton)
-        }
     }
 }

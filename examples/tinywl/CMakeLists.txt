@@ -45,6 +45,9 @@ qt_add_qml_module(tinywl-qtquick
         CloseAnimation.qml
         MiniDock.qml
         InputPopupSurface.qml
+        StageManagerWorkspace.qml
+        RoundedImage.qml
+        LayoutSelector.qml
 )
 
 target_compile_definitions(tinywl-qtquick

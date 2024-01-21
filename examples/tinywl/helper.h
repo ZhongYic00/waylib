@@ -53,7 +53,7 @@ public Q_SLOTS:
     void startMove(WToplevelSurface *surface, WSurfaceItem *shell, WSeat *seat, int serial);
     void startResize(WToplevelSurface *surface, WSurfaceItem *shell, WSeat *seat, Qt::Edges edge, int serial);
     void cancelMoveResize(WSurfaceItem *shell);
-    bool startDemoClient(const QString &socket);
+    bool startDemoClient(const QString &socket,const QString &sh="");
     WSurface *getFocusSurfaceFrom(QObject *object);
 
     void allowNonDrmOutputAutoChangeMode(WOutput *output);
