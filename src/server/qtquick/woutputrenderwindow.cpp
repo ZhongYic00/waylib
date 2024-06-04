@@ -168,7 +168,7 @@ public:
         connect(this, &OutputHelper::damaged, renderWindow(), &WOutputRenderWindow::scheduleRender);
         connect(output(), &WOutputViewport::layerFlagsChanged, renderWindow(), &WOutputRenderWindow::scheduleRender);
         // TODO: pre update scale after WOutputHelper::setScale
-        connect(output()->output(), &WOutput::scaleChanged, this, &OutputHelper::updateSceneDPR);
+        WWrapObject::safeConnect(output()->output(), &WOutput::scaleChanged, this, &OutputHelper::updateSceneDPR);
     }
 
     inline QWOutput *qwoutput() const {

@@ -24,7 +24,7 @@ class WSeat;
 class WTextInputV1;
 class WTextInputManagerV1Private;
 class WTextInputV1Private;
-class WTextInputManagerV1 : public QObject, public WObject
+class WTextInputManagerV1 : public WWrapObject
 {
     Q_OBJECT
     W_DECLARE_PRIVATE(WTextInputManagerV1)
@@ -38,7 +38,7 @@ private:
     explicit WTextInputManagerV1(ws_text_input_manager_v1 *handle);
 };
 
-class WTextInputV1 : public QObject, public WObject
+class WTextInputV1 : public WWrapObject
 {
     Q_OBJECT
     W_DECLARE_PRIVATE(WTextInputV1)
@@ -95,6 +95,9 @@ public Q_SLOTS:
     void sendKeysym(uint time, uint sym, uint state, uint modifiers);
     void sendLanguage(const QString &language);
     void sendTextDirection(uint direction);
+
+protected:
+    ~WTextInputV1() override = default;
 
 private:
     explicit WTextInputV1(ws_text_input_v1 *handle, QObject *parent = nullptr);

@@ -42,40 +42,14 @@ WAYLIB_SERVER_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(qLcOutput, "waylib.server.output", QtWarningMsg)
 
-class Q_DECL_HIDDEN WOutputPrivate : public WObjectPrivate
+class Q_DECL_HIDDEN WOutputPrivate : public WWrapObjectPrivate
 {
 public:
     WOutputPrivate(WOutput *qq, QWOutput *handle)
-        : WObjectPrivate(qq)
+        : WWrapObjectPrivate(qq)
         , handle(handle)
     {
         this->handle->setData(this, qq);
-
-        QObject::connect(this->handle.get(), qOverload<wlr_output_event_commit*>(&QWOutput::commit),
-                         qq, [qq] (wlr_output_event_commit *event) {
-            if (event->state->committed & WLR_OUTPUT_STATE_SCALE) {
-                Q_EMIT qq->scaleChanged();
-                Q_EMIT qq->effectiveSizeChanged();
-            }
-
-            if (event->state->committed & WLR_OUTPUT_STATE_MODE) {
-                Q_EMIT qq->modeChanged();
-                Q_EMIT qq->transformedSizeChanged();
-                Q_EMIT qq->effectiveSizeChanged();
-            }
-
-            if (event->state->committed & WLR_OUTPUT_STATE_TRANSFORM) {
-                Q_EMIT qq->orientationChanged();
-                Q_EMIT qq->transformedSizeChanged();
-                Q_EMIT qq->effectiveSizeChanged();
-            }
-
-            if (event->state->committed & WLR_OUTPUT_STATE_BUFFER)
-                Q_EMIT qq->bufferCommitted();
-
-            if (event->state->committed & WLR_OUTPUT_STATE_ENABLED)
-                Q_EMIT qq->enabledChanged();
-        });
     }
 
     ~WOutputPrivate() {
@@ -110,10 +84,34 @@ public:
 };
 
 WOutput::WOutput(QWOutput *handle, WBackend *backend)
-    : QObject()
-    , WObject(*new WOutputPrivate(this, handle))
+    : WWrapObject(*new WOutputPrivate(this, handle))
 {
     d_func()->backend = backend;
+    safeConnect(this, qOverload<wlr_output_event_commit*>(&QWOutput::commit),
+            this, [this] (wlr_output_event_commit *event) {
+        if (event->state->committed & WLR_OUTPUT_STATE_SCALE) {
+            Q_EMIT this->scaleChanged();
+            Q_EMIT this->effectiveSizeChanged();
+        }
+
+        if (event->state->committed & WLR_OUTPUT_STATE_MODE) {
+            Q_EMIT this->modeChanged();
+            Q_EMIT this->transformedSizeChanged();
+            Q_EMIT this->effectiveSizeChanged();
+        }
+
+        if (event->state->committed & WLR_OUTPUT_STATE_TRANSFORM) {
+            Q_EMIT this->orientationChanged();
+            Q_EMIT this->transformedSizeChanged();
+            Q_EMIT this->effectiveSizeChanged();
+        }
+
+        if (event->state->committed & WLR_OUTPUT_STATE_BUFFER)
+            Q_EMIT this->bufferCommitted();
+
+        if (event->state->committed & WLR_OUTPUT_STATE_ENABLED)
+            Q_EMIT this->enabledChanged();
+    });
 }
 
 WOutput::~WOutput()

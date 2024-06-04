@@ -22,7 +22,7 @@ extern "C" {
 QW_USE_NAMESPACE
 WAYLIB_SERVER_BEGIN_NAMESPACE
 
-class Q_DECL_HIDDEN WXdgSurfacePrivate : public WObjectPrivate {
+class Q_DECL_HIDDEN WXdgSurfacePrivate : public WToplevelSurfacePrivate {
 public:
     WXdgSurfacePrivate(WXdgSurface *qq, QWXdgSurface *handle);
     ~WXdgSurfacePrivate();
@@ -60,7 +60,7 @@ public:
 };
 
 WXdgSurfacePrivate::WXdgSurfacePrivate(WXdgSurface *qq, QWXdgSurface *hh)
-    : WObjectPrivate(qq)
+    : WToplevelSurfacePrivate(qq)
     , handle(hh)
     , resizeing(false)
     , activated(false)
@@ -86,15 +86,8 @@ void WXdgSurfacePrivate::instantRelease()
     handle->disconnect(q);
     if (auto toplevel = handle->topToplevel())
         toplevel->disconnect(q);
-    surface->deleteLater();
+    surface->safeDeleteLater();
     surface = nullptr;
-}
-
-void WXdgSurface::deleteLater()
-{
-    W_D(WXdgSurface);
-    d->instantRelease();
-    QObject::deleteLater();
 }
 
 void WXdgSurfacePrivate::on_configure(wlr_xdg_surface_configure *event)
@@ -146,13 +139,14 @@ void WXdgSurfacePrivate::connect()
 {
     W_Q(WXdgSurface);
 
-    QObject::connect(handle, &QWXdgSurface::configure, q, [this] (wlr_xdg_surface_configure *event) {
+    WWrapObject::safeConnect(q, &QWXdgSurface::configure, q, [this] (wlr_xdg_surface_configure *event) {
         on_configure(event);
     });
-    QObject::connect(handle, &QWXdgSurface::ackConfigure, q, [this] (wlr_xdg_surface_configure *event) {
+    WWrapObject::safeConnect(q, &QWXdgSurface::ackConfigure, q, [this] (wlr_xdg_surface_configure *event) {
         on_ack_configure(event);
     });
 
+    // TODO: use safeConnect for toplevel
     if (auto toplevel = handle->topToplevel()) {
         QObject::connect(toplevel, &QWXdgToplevel::requestMove, q, [q] (wlr_xdg_toplevel_move_event *event) {
             auto seat = WSeat::fromHandle(QWSeat::from(event->seat->seat));
@@ -196,8 +190,7 @@ void WXdgSurfacePrivate::connect()
 }
 
 WXdgSurface::WXdgSurface(QWXdgSurface *handle, QObject *parent)
-    : WToplevelSurface(parent)
-    , WObject(*new WXdgSurfacePrivate(this, handle))
+    : WToplevelSurface(*new WXdgSurfacePrivate(this, handle), parent)
 {
     d_func()->init();
 }

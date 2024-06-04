@@ -302,7 +302,7 @@ void WInputMethodHelper::handleNewIMV2(QWInputMethodV2 *imv2)
             setInputMethod(nullptr);
             wimv2->disconnect();
         }
-        wimv2->deleteLater();
+        wimv2->safeDeleteLater();
         notifyLeave();
     });
 
@@ -355,7 +355,7 @@ void WInputMethodHelper::handleNewIPSV2(QWInputPopupSurfaceV2 *ipsv2)
         connect(popupSurface, &QWInputPopupSurfaceV2::beforeDestroy, this, [this, d, surface](){
             d->popupSurfaces.removeAll(surface);
             Q_EMIT inputPopupSurfaceV2Removed(surface);
-            surface->deleteLater();
+            surface->safeDeleteLater();
         });
     };
 

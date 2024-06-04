@@ -49,6 +49,10 @@
 
 #include <QScopedPointer>
 #include <QList>
+#include <QObject>
+#include <QThread>
+
+#include <type_traits>
 
 struct wl_client;
 WAYLIB_SERVER_BEGIN_NAMESPACE
@@ -77,7 +81,7 @@ protected:
     WObject *q_ptr;
     QList<std::pair<const void*, void*>> attachedDatas;
 
-    Q_DECLARE_PUBLIC(WObject)
+    W_DECLARE_PUBLIC(WObject)
 };
 
 class WAYLIB_SERVER_EXPORT WObject
@@ -127,6 +131,84 @@ protected:
 
     Q_DISABLE_COPY(WObject)
     W_DECLARE_PRIVATE(WObject)
+};
+
+class WWrapObject;
+class WWrapObjectPrivate: public WObjectPrivate
+{
+public:
+    WWrapObjectPrivate(WWrapObject *q);
+    ~WWrapObjectPrivate();
+
+protected:
+    friend class WWrapObject;
+
+    void invalidate();
+    virtual void instantRelease() {}
+
+    QList<QMetaObject::Connection> connections;
+    bool invalidated = false;
+};
+
+// Wrap Object in QWlroots
+class WWrapObject: public QObject,  public WObject
+{
+    Q_OBJECT
+public:
+    template<typename Func1, typename Func2>
+    static typename std::enable_if<std::is_base_of<WObject, typename QtPrivate::FunctionPointer<Func1>::Object>::value, QMetaObject::Connection>::type
+    safeConnect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender,
+                Func1 signal, const QObject *receiver, Func2 slot,
+                Qt::ConnectionType type = Qt::AutoConnection) {
+        auto connection = QObject::connect(sender, signal, receiver, slot, type);
+        if (!connection)
+            return connection;
+
+        // Isn't thread safety
+        Q_ASSERT(QThread::currentThread() == sender->thread());
+        auto d = static_cast<WWrapObjectPrivate*>(static_cast<const WWrapObject*>(sender)->w_d_ptr.get());
+        Q_ASSERT(!d->invalidated);
+        d->connections.append(connection);
+        return connection;
+    }
+
+    template<typename T, typename Func1, typename Func2>
+    static QMetaObject::Connection
+    safeConnect(const T *sender, Func1 signal, const QObject *receiver, Func2 slot, Qt::ConnectionType type = Qt::AutoConnection)
+                requires std::is_base_of_v<WObject, T>
+                && (!std::is_base_of_v<WObject, typename QtPrivate::FunctionPointer<Func1>::Object>)
+                && requires(T t) { std::is_base_of_v<typename QtPrivate::FunctionPointer<Func1>::Object,decltype(*t.handle())>; }
+                {
+        Q_ASSERT(sender->handle());
+        auto connection = QObject::connect(sender->handle(), signal, receiver, slot, type);
+        if (!connection)
+            return connection;
+
+        // Isn't thread safety
+        Q_ASSERT(QThread::currentThread() == sender->thread());
+        auto d = static_cast<WWrapObjectPrivate*>(static_cast<const WWrapObject*>(sender)->w_d_ptr.get());
+        Q_ASSERT(!d->invalidated);
+        d->connections.append(connection);
+        return connection;
+    }
+
+    template<typename T>
+    inline static QMetaObject::Connection safeConnect(const QPointer<T> sender, auto signal, const QObject *receiver, auto slot) {
+        return safeConnect(sender.get(), signal, receiver, slot);
+    }
+
+    bool safeDisconnect(const QObject *receiver);
+    bool safeDisconnect(const QMetaObject::Connection &connection);
+
+    // release resources requiring instant release, then QObject::deleteLater
+    void safeDeleteLater();
+
+protected:
+    WWrapObject(WWrapObjectPrivate &dd, QObject *parent = nullptr);
+    virtual ~WWrapObject() override;
+    using QObject::deleteLater;
+
+    W_DECLARE_PRIVATE(WWrapObject)
 };
 
 WAYLIB_SERVER_END_NAMESPACE

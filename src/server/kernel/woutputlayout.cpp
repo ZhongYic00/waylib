@@ -65,7 +65,7 @@ void WOutputLayout::add(WOutput *output, const QPoint &pos)
     QWOutputLayout::add(output->handle(), pos);
     output->setLayout(this);
 
-    connect(output, &WOutput::effectiveSizeChanged, this, [d](){
+    WWrapObject::safeConnect(output, &WOutput::effectiveSizeChanged, this, [d](){
         d->updateImplicitSize();
     });
     d->updateImplicitSize();

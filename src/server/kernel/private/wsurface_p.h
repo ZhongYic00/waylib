@@ -19,7 +19,7 @@ QW_END_NAMESPACE
 
 WAYLIB_SERVER_BEGIN_NAMESPACE
 
-class WSurfacePrivate : public WObjectPrivate {
+class WSurfacePrivate : public WWrapObjectPrivate {
 public:
     WSurfacePrivate(WSurface *qq, QW_NAMESPACE::QWSurface *handle);
     ~WSurfacePrivate();
@@ -34,7 +34,7 @@ public:
 
     void init();
     void connect();
-    void instantRelease();    // release qwobject etc.
+    void instantRelease() override;    // release qwobject etc.
     void updateOutputs();
     void setPrimaryOutput(WOutput *output);
     void setBuffer(QW_NAMESPACE::QWBuffer *newBuffer);

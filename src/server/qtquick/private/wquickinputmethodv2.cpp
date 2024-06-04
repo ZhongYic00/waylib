@@ -58,17 +58,17 @@ void WQuickInputMethodManagerV2::create()
     connect(d->manager, &QWInputMethodManagerV2::inputMethod, this, &WQuickInputMethodManagerV2::newInputMethod);
 }
 
-class WQuickInputPopupSurfaceV2Private : public WObjectPrivate
+class WQuickInputPopupSurfaceV2Private : public WWrapObjectPrivate
 {
 public:
     WQuickInputPopupSurfaceV2Private(QWInputPopupSurfaceV2 *h, WQuickInputPopupSurfaceV2 *qq)
-        : WObjectPrivate(qq)
+        : WWrapObjectPrivate(qq)
         , handle(h)
         , popupSurface(WSurface::fromHandle(h->surface()))
     {
         if (!popupSurface) {
             popupSurface = new WSurface(h->surface());
-            QObject::connect(h->surface(), &QWSurface::beforeDestroy, popupSurface, &WSurface::deleteLater);
+            QObject::connect(h->surface(), &QWSurface::beforeDestroy, popupSurface, &WSurface::safeDeleteLater);
         }
     }
 
@@ -95,11 +95,11 @@ public:
     QWInputMethodKeyboardGrabV2 *const handle;
 };
 
-class WQuickInputMethodV2Private : public WObjectPrivate
+class WQuickInputMethodV2Private : public WWrapObjectPrivate
 {
 public:
     WQuickInputMethodV2Private(QWInputMethodV2 *h, WQuickInputMethodV2 *qq)
-        : WObjectPrivate(qq)
+        : WWrapObjectPrivate(qq)
         , handle(h)
     { }
 
@@ -108,9 +108,9 @@ public:
 };
 
 WQuickInputMethodV2::WQuickInputMethodV2(QWInputMethodV2 *h, QObject *parent) :
-    QObject(parent),
-    WObject(*new WQuickInputMethodV2Private(h, this), nullptr)
+    WWrapObject(*new WQuickInputMethodV2Private(h, this), parent)
 {
+    W_D(WQuickInputMethodV2);
     connect(handle(), &QWInputMethodV2::commit, this, &WQuickInputMethodV2::committed);
     connect(handle(), &QWInputMethodV2::grabKeybord, this, &WQuickInputMethodV2::newKeyboardGrab);
     connect(handle(), &QWInputMethodV2::newPopupSurface, this, &WQuickInputMethodV2::newPopupSurface);
@@ -170,8 +170,7 @@ void WQuickInputMethodV2::sendUnavailable()
 }
 
 WQuickInputPopupSurfaceV2::WQuickInputPopupSurfaceV2(QWInputPopupSurfaceV2 *handle, QObject *parent) :
-    QObject(parent),
-    WObject(*new WQuickInputPopupSurfaceV2Private(handle, this), nullptr)
+    WWrapObject(*new WQuickInputPopupSurfaceV2Private(handle, this), parent)
 { }
 
 WSurface *WQuickInputPopupSurfaceV2::surface() const
@@ -242,12 +241,12 @@ void WQuickInputMethodKeyboardGrabV2::setKeyboard(WInputDevice *keyboard)
     }
 }
 
-class WInputPopupV2Private : public WObjectPrivate
+class WInputPopupV2Private : public WToplevelSurfacePrivate
 {
 public:
     W_DECLARE_PUBLIC(WInputPopupV2)
     explicit WInputPopupV2Private(QWInputPopupSurfaceV2 *surface, WSurface *parentSurface, WInputPopupV2 *qq)
-        : WObjectPrivate(qq)
+        : WToplevelSurfacePrivate(qq)
         , handle(surface)
         , parent(parentSurface)
     { }
@@ -262,8 +261,7 @@ public:
 };
 
 WInputPopupV2::WInputPopupV2(QWInputPopupSurfaceV2 *surface, WSurface *parentSurface, QObject *parent)
-    : WToplevelSurface(parent)
-    , WObject(*new WInputPopupV2Private(surface, parentSurface, this))
+    : WToplevelSurface(*new WInputPopupV2Private(surface, parentSurface, this), parent)
 { }
 
 bool WInputPopupV2::doesNotAcceptFocus() const
@@ -276,7 +274,7 @@ WSurface *WInputPopupV2::surface() const
     auto wSurface = WSurface::fromHandle(handle()->surface());
     if (!wSurface) {
         wSurface = new WSurface(handle()->surface());
-        connect(handle()->surface(), &QWSurface::beforeDestroy, wSurface, &WSurface::deleteLater);
+        connect(handle()->surface(), &QWSurface::beforeDestroy, wSurface, &WSurface::safeDeleteLater);
     }
     return wSurface;
 }

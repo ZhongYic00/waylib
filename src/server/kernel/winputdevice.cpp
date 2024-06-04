@@ -18,11 +18,11 @@ extern "C" {
 QW_USE_NAMESPACE
 WAYLIB_SERVER_BEGIN_NAMESPACE
 
-class WInputDevicePrivate : public WObjectPrivate
+class WInputDevicePrivate : public WWrapObjectPrivate
 {
 public:
     WInputDevicePrivate(WInputDevice *qq, void *handle)
-        : WObjectPrivate(qq)
+        : WWrapObjectPrivate(qq)
         , handle(reinterpret_cast<QWInputDevice*>(handle))
     {
         this->handle->setData(this, qq);
@@ -46,7 +46,7 @@ public:
 };
 
 WInputDevice::WInputDevice(QWInputDevice *handle)
-    : WObject(*new WInputDevicePrivate(this, handle))
+    : WWrapObject(*new WInputDevicePrivate(this, handle))
 {
 
 }

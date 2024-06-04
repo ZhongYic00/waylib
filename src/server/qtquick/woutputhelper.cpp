@@ -48,17 +48,17 @@ public:
         outputWindow->setScreen(QWlrootsIntegration::instance()->getScreenFrom(output)->screen());
         outputWindow->create();
 
-        QObject::connect(qwoutput(), &QWOutput::frame, qq, [this] {
+        WWrapObject::safeConnect(output, &QWOutput::frame, qq, [this] {
             on_frame();
         });
-        QObject::connect(qwoutput(), &QWOutput::needsFrame, qq, [this] {
+        WWrapObject::safeConnect(output, &QWOutput::needsFrame, qq, [this] {
             setNeedsFrame(true);
             qwoutput()->QWOutput::scheduleFrame();
         });
-        QObject::connect(qwoutput(), &QWOutput::damage, qq, [this] {
+        WWrapObject::safeConnect(output, &QWOutput::damage, qq, [this] {
             on_damage();
         });
-        QObject::connect(output, &WOutput::modeChanged, qq, [this] {
+        WWrapObject::safeConnect(output, &WOutput::modeChanged, qq, [this] {
             if (renderHelper)
                 renderHelper->setSize(this->output->size());
         }, Qt::QueuedConnection); // reset buffer on later, because it's rendering

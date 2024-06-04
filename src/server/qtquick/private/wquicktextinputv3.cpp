@@ -58,7 +58,6 @@ public:
         : WQuickTextInputPrivate(qq)
         , handle(h)
     { }
-
     QWTextInputV3 *const handle;
 
     wl_client *waylandClient() const override

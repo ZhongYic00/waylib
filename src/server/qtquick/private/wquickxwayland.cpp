@@ -62,13 +62,13 @@ void XWayland::surfaceAdded(WXWaylandSurface *surface)
 {
     WXWayland::surfaceAdded(surface);
 
-    QObject::connect(surface, &WXWaylandSurface::isToplevelChanged,
+    WWrapObject::safeConnect(surface, &WXWaylandSurface::isToplevelChanged,
                      qq, &WQuickXWayland::onIsToplevelChanged);
-    QObject::connect(surface->handle(), &QWXWaylandSurface::associate,
+    WWrapObject::safeConnect(surface, &QWXWaylandSurface::associate,
                      qq, [this, surface] {
         qq->addSurface(surface);
     });
-    QObject::connect(surface->handle(), &QWXWaylandSurface::dissociate,
+    WWrapObject::safeConnect(surface, &QWXWaylandSurface::dissociate,
                      qq, [this, surface] {
         qq->removeSurface(surface);
     });
@@ -197,7 +197,7 @@ void WQuickXWayland::tryCreateXWayland()
 
     xwayland = server()->attach<XWayland>(this);
     xwayland->setOwnsSocket(ownsSocket());
-    connect(xwayland->handle(), &QWXWayland::ready, this, &WQuickXWayland::ready);
+    WWrapObject::safeConnect(xwayland, &QWXWayland::ready, this, &WQuickXWayland::ready);
 
     Q_EMIT displayNameChanged();
 }
@@ -253,7 +253,7 @@ WXWaylandSurfaceItem::WXWaylandSurfaceItem(QQuickItem *parent)
     connect(this,&WXWaylandSurfaceItem::shellSurfaceChanged,[this]{
         if (!shellSurface())
             return;
-        connect(shellSurface(), &WXWaylandSurface::surfaceChanged, this, [this] {
+        WWrapObject::safeConnect(xwaylandSurface(), &WXWaylandSurface::surfaceChanged, this, [this] {
             WSurfaceItem::setSurface(xwaylandSurface()->surface());
         });
 
@@ -274,7 +274,7 @@ WXWaylandSurfaceItem::WXWaylandSurfaceItem(QQuickItem *parent)
             }
         };
 
-        connect(xwaylandSurface(), &WXWaylandSurface::requestConfigure,
+        WWrapObject::safeConnect(xwaylandSurface(), &WXWaylandSurface::requestConfigure,
                 this, [updateGeometry, this] {
             if (m_ignoreConfigureRequest)
                 return;
@@ -283,7 +283,7 @@ WXWaylandSurfaceItem::WXWaylandSurfaceItem(QQuickItem *parent)
             configureSurface(geometry);
             updateGeometry();
         });
-        connect(xwaylandSurface(), &WXWaylandSurface::geometryChanged, this, updateGeometry);
+        WWrapObject::safeConnect(xwaylandSurface(), &WXWaylandSurface::geometryChanged, this, updateGeometry);
         connect(this, &WXWaylandSurfaceItem::topPaddingChanged,
                 this, &WXWaylandSurfaceItem::updatePosition, Qt::UniqueConnection);
         connect(this, &WXWaylandSurfaceItem::leftPaddingChanged,

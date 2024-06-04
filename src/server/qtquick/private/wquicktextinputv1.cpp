@@ -612,12 +612,12 @@ ws_text_input_manager_v1 *text_input_manager_v1_create(wl_display *display)
     return manager;
 }
 
-class WTextInputManagerV1Private : public WObjectPrivate
+class WTextInputManagerV1Private : public WWrapObjectPrivate
 {
 public:
     W_DECLARE_PUBLIC(WTextInputManagerV1)
     explicit WTextInputManagerV1Private(ws_text_input_manager_v1 *h, WTextInputManagerV1 *qq)
-        : WObjectPrivate(qq)
+        : WWrapObjectPrivate(qq)
         , handle(h)
     {
         sc.connect(&handle->events.text_input, this, &WTextInputManagerV1Private::on_text_input);
@@ -634,8 +634,7 @@ public:
 };
 
 WTextInputManagerV1::WTextInputManagerV1(ws_text_input_manager_v1 *handle)
-    : QObject(nullptr)
-    , WObject(*new WTextInputManagerV1Private(handle, this))
+    : WWrapObject(*new WTextInputManagerV1Private(handle, this))
 { }
 
 WTextInputManagerV1 *WTextInputManagerV1::create(QWDisplay *display)
@@ -644,12 +643,12 @@ WTextInputManagerV1 *WTextInputManagerV1::create(QWDisplay *display)
     return manager ? new WTextInputManagerV1(manager) : nullptr;
 }
 
-class WTextInputV1Private : public WObjectPrivate
+class WTextInputV1Private : public WWrapObjectPrivate
 {
 public:
     W_DECLARE_PUBLIC(WTextInputV1)
     explicit WTextInputV1Private(ws_text_input_v1 *h, WTextInputV1 *qq)
-        : WObjectPrivate(qq)
+        : WWrapObjectPrivate(qq)
         , handle(h)
     {
         sc.connect(&handle->events.activate, this, &WTextInputV1Private::on_activate);
@@ -732,8 +731,7 @@ public:
 };
 
 WTextInputV1::WTextInputV1(ws_text_input_v1 *handle, QObject *parent)
-    : QObject(parent)
-    , WObject(*new WTextInputV1Private(handle, this))
+    : WWrapObject(*new WTextInputV1Private(handle, this), parent)
 { }
 
 WSeat *WTextInputV1::seat() const

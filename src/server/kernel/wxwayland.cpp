@@ -22,11 +22,11 @@ extern "C" {
 QW_USE_NAMESPACE
 WAYLIB_SERVER_BEGIN_NAMESPACE
 
-class WXWaylandPrivate : public WObjectPrivate
+class WXWaylandPrivate : public WWrapObjectPrivate
 {
 public:
     WXWaylandPrivate(WXWayland *qq, QWCompositor *compositor, bool lazy)
-        : WObjectPrivate(qq)
+        : WWrapObjectPrivate(qq)
         , compositor(compositor)
         , lazy(lazy)
     {
@@ -128,11 +128,11 @@ void WXWaylandPrivate::on_surface_destroy(QWXWaylandSurface *xwl_surface)
     bool ok = surfaceList.removeOne(surface);
     Q_ASSERT(ok);
     q_func()->surfaceRemoved(surface);
-    surface->deleteLater();
+    surface->safeDeleteLater();
 }
 
 WXWayland::WXWayland(QWCompositor *compositor, bool lazy)
-    : WObject(*new WXWaylandPrivate(this, compositor, lazy))
+    : WWrapObject(*new WXWaylandPrivate(this, compositor, lazy))
 {
 
 }
@@ -206,14 +206,14 @@ void WXWayland::create(WServer *server)
     // free follow display
 
     auto handle = QWXWayland::create(server->handle(), d->compositor, d->lazy);
-    QObject::connect(handle, &QWXWayland::newSurface, this, [d] (wlr_xwayland_surface *surface) {
+    m_handle = handle;
+
+    WWrapObject::safeConnect(this, &QWXWayland::newSurface, this, [d] (wlr_xwayland_surface *surface) {
         d->on_new_surface(surface);
     });
-    QObject::connect(handle, &QWXWayland::ready, this, [d] {
+    WWrapObject::safeConnect(this, &QWXWayland::ready, this, [d] {
         d->init();
     });
-
-    m_handle = handle;
 }
 
 void WXWayland::destroy(WServer *server)
@@ -226,7 +226,7 @@ void WXWayland::destroy(WServer *server)
 
     for (auto surface : list) {
         surfaceRemoved(surface);
-        surface->deleteLater();
+        surface->safeDeleteLater();
     }
 }
 

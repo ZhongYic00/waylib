@@ -114,7 +114,6 @@ public:
     IME::Features features() const override;
     QW_NAMESPACE::QWTextInputV3 *handle() const;
 
-
 public Q_SLOTS:
     void sendEnter(WSurface *surface) override;
     void sendLeave() override;
