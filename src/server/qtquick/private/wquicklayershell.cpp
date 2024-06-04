@@ -100,22 +100,6 @@ WLayerSurfaceItem::~WLayerSurfaceItem()
 
 }
 
-WLayerSurface *WLayerSurfaceItem::surface() const
-{
-    return m_surface;
-}
-
-void WLayerSurfaceItem::setSurface(WLayerSurface *surface)
-{
-    if (m_surface == surface)
-        return;
-
-    m_surface = surface;
-    WSurfaceItem::setSurface(surface ? surface->surface() : nullptr);
-
-    Q_EMIT surfaceChanged();
-}
-
 inline static int32_t getValidSize(int32_t size, int32_t fallback) {
     return size > 0 ? size : fallback;
 }
@@ -128,23 +112,23 @@ void WLayerSurfaceItem::onSurfaceCommit()
 void WLayerSurfaceItem::initSurface()
 {
     WSurfaceItem::initSurface();
-    Q_ASSERT(m_surface);
-    connect(m_surface->handle(), &QWLayerSurfaceV1::beforeDestroy,
+    Q_ASSERT(layerSurface());
+    connect(layerSurface()->handle(), &QWLayerSurfaceV1::beforeDestroy,
             this, &WLayerSurfaceItem::releaseResources);
 }
 
 bool WLayerSurfaceItem::resizeSurface(const QSize &newSize)
 {
-    if (!m_surface->checkNewSize(newSize))
+    if (!layerSurface()->checkNewSize(newSize))
        return false;
-    m_surface->configureSize(newSize);
+    layerSurface()->configureSize(newSize);
 
     return true;
 }
 
 QRectF WLayerSurfaceItem::getContentGeometry() const
 {
-   return m_surface->getContentGeometry();
+   return layerSurface()->getContentGeometry();
 }
 
 WAYLIB_SERVER_END_NAMESPACE

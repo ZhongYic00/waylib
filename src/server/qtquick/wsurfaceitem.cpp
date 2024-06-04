@@ -98,6 +98,7 @@ public:
 
     Q_DECLARE_PUBLIC(WSurfaceItem)
     QPointer<WSurface> surface;
+    QPointer<WToplevelSurface> shellSurface;
     std::unique_ptr<SurfaceState> surfaceState;
     QQuickItem *contentContainer = nullptr;
     QQmlComponent *delegate = nullptr;
@@ -1305,6 +1306,22 @@ qreal WSurfaceItemPrivate::getImplicitHeight() const
         return ps.height();
 
     return surfaceState->contentGeometry.height() + ps.height();
+}
+
+
+WToplevelSurface *WSurfaceItem::shellSurface() const
+{
+    return d_func()->shellSurface;
+}
+
+void WSurfaceItem::setShellSurface(WToplevelSurface *surface)
+{
+    Q_D(WSurfaceItem);
+    if (d->shellSurface == surface)
+        return;
+    d->shellSurface = surface;
+    setSurface(surface ? surface->surface() : nullptr);
+    Q_EMIT this->shellSurfaceChanged();
 }
 
 WAYLIB_SERVER_END_NAMESPACE
